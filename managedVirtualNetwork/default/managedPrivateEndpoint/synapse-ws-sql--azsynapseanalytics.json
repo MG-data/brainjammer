@@ -1,0 +1,10 @@
+{
+	"name": "synapse-ws-sql--azsynapseanalytics",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics",
+		"groupId": "sql",
+		"fqdns": [
+			"azsynapseanalytics.e08b47b9-e4cc-44f0-8611-7e6939748af7.sql.azuresynapse.net"
+		]
+	}
+}
