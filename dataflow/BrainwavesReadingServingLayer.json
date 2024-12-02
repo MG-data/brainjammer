@@ -1,0 +1,64 @@
+{
+	"name": "BrainwavesReadingServingLayer",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "BrainjammerAzureSQLREADING",
+						"type": "DatasetReference"
+					},
+					"name": "BrainwavesReading"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "BrainjammerSynapseTmpReading",
+						"type": "DatasetReference"
+					},
+					"name": "brainjammerTmpReading"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          READING_ID as integer,",
+				"          SESSION_ID as integer,",
+				"          ELECTRODE_ID as integer,",
+				"          FREQUENCY_ID as integer,",
+				"          READING_DATETIME as timestamp,",
+				"          COUNT as integer,",
+				"          VALUE as decimal(7,3)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> BrainwavesReading",
+				"BrainwavesReading sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          READING_ID as integer,",
+				"          SESSION_ID as integer,",
+				"          ELECTRODE_ID as integer,",
+				"          FREQUENCY_ID as integer,",
+				"          READING_DATETIME as timestamp,",
+				"          COUNT as integer,",
+				"          VALUE as decimal(8,3)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> brainjammerTmpReading"
+			]
+		}
+	}
+}

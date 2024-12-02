@@ -1,0 +1,54 @@
+{
+	"name": "BrainjammerAzureSQLREADING",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "BrainjammerAzureSQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "READING_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SESSION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ELECTRODE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FREQUENCY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "READING_DATETIME",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "COUNT",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VALUE",
+				"type": "decimal",
+				"precision": 7,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "READING"
+		}
+	}
+}
