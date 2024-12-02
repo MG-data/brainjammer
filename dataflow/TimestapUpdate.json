@@ -1,5 +1,5 @@
 {
-	"name": "Dataflow1",
+	"name": "TimestapUpdate",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
