@@ -1,5 +1,5 @@
 {
-	"name": "Notebook 1",
+	"name": "HeaderUpdate",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c6e85ad5-125d-4ab0-a193-4eed308f9105"
+				"spark.autotune.trackingId": "65998a0c-f0d1-482a-b62a-43d9c88e7c17"
 			}
 		},
 		"metadata": {

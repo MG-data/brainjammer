@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "SELECT COUNT(*) FROM brainwaves.TmpREADING\nSELECT TOP(10) * FROM brainwaves.TmpREADING\nDELETE FROM brainwaves.TmpREADING",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SQLPool",
+				"poolName": "SQLPool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
