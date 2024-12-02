@@ -1,0 +1,125 @@
+{
+	"name": "sampleBrainwavesParquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "EMEA/brainjammer/out/2022/04/03/17/sampleBrainwaves.parquet",
+				"fileSystem": "brainjammer"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "Timestamp",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF3theta",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF3alpha",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF3betaL",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF3betaH",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF3gamma",
+				"type": "UTF8"
+			},
+			{
+				"name": "T7theta",
+				"type": "UTF8"
+			},
+			{
+				"name": "T7alpha",
+				"type": "UTF8"
+			},
+			{
+				"name": "T7betaL",
+				"type": "UTF8"
+			},
+			{
+				"name": "T7betaH",
+				"type": "UTF8"
+			},
+			{
+				"name": "T7gamma",
+				"type": "UTF8"
+			},
+			{
+				"name": "Pztheta",
+				"type": "UTF8"
+			},
+			{
+				"name": "Pzalpha",
+				"type": "UTF8"
+			},
+			{
+				"name": "PzbetaL",
+				"type": "UTF8"
+			},
+			{
+				"name": "PzbetaH",
+				"type": "UTF8"
+			},
+			{
+				"name": "Pzgamma",
+				"type": "UTF8"
+			},
+			{
+				"name": "T8theta",
+				"type": "UTF8"
+			},
+			{
+				"name": "T8alpha",
+				"type": "UTF8"
+			},
+			{
+				"name": "T8betaL",
+				"type": "UTF8"
+			},
+			{
+				"name": "T8betaH",
+				"type": "UTF8"
+			},
+			{
+				"name": "T8gamma",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF4theta",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF4alpha",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF4betaL",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF4betaH",
+				"type": "UTF8"
+			},
+			{
+				"name": "AF4gamma",
+				"type": "UTF8"
+			}
+		]
+	}
+}
