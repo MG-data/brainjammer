@@ -1,0 +1,17 @@
+{
+	"name": "Buildexternaldatabase",
+	"properties": {
+		"content": {
+			"query": "CREATE EXTERNAL DATA SOURCE SampleBrainwavesSource\nWITH (LOCATION = 'abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net')\n\nCREATE EXTERNAL FILE FORMAT SampleBrainwavesParquet\nWITH  (FORMAT_TYPE = PARQUET) \n\nCREATE EXTERNAL TABLE SampleBrainwaves\n(\n [Timestamp] NVARCHAR(50),\n [AF3theta] NVARCHAR(50),\n [AF3alpha] NVARCHAR(50),\n [AF3betaL] NVARCHAR(50),\n [AF3betaH] NVARCHAR(50),\n [AF3gamma] NVARCHAR(50),\n [T7theta] NVARCHAR(50),\n [T7alpha] NVARCHAR(50),\n [T7betaL] NVARCHAR(50),\n [T7betaH] NVARCHAR(50),\n [T7gamma] NVARCHAR(50),\n [Pztheta] NVARCHAR(50),\n [Pzalpha] NVARCHAR(50),\n [PzbetaL] NVARCHAR(50),\n [PzbetaH] NVARCHAR(50),\n [Pzgamma] NVARCHAR(50),\n [T8theta] NVARCHAR(50),\n [T8alpha] NVARCHAR(50),\n [T8betaL] NVARCHAR(50),\n [T8betaH] NVARCHAR(50),\n [T8gamma] NVARCHAR(50),\n [AF4theta] NVARCHAR(50),\n [AF4alpha] NVARCHAR(50),\n [AF4betaL] NVARCHAR(50),\n [AF4betaH] NVARCHAR(50),\n [AF4gamma] NVARCHAR(50)\n)\nWITH \n(\n LOCATION = 'EMEA/brainjammer/out/2022/04/03/*/*.parquet/*',\n DATA_SOURCE = SampleBrainwavesSource,\n FILE_FORMAT = SampleBrainwavesParquet\n)\n\nSELECT TOP 10 * FROM SampleBrainwaves",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "BRAINJAMMER",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
