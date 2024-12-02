@@ -1,0 +1,1031 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "azsynapseanalytics"
+		},
+		"AzureFileStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureFileStorage1'"
+		},
+		"BrainjammerAzureSQL_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'BrainjammerAzureSQL'"
+		},
+		"BrainjammerCosmosDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'BrainjammerCosmosDb'"
+		},
+		"azsynapseanalytics-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'azsynapseanalytics-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:azsynapseanalytics.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"BrainjammerAzureSQL_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "csharpguitar-azsqldb.database.windows.net"
+		},
+		"BrainjammerAzureSQL_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "brainjammer"
+		},
+		"BrainjammerAzureSQL_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "Daria"
+		},
+		"azsynapseanalytics-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://csharpguitarpublic.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/IngestTmpReading')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "MoveToTmpReading",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "BrainwavesReadingServingLayer",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"BrainwavesReading": {},
+									"brainjammerTmpReading": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "brainjammer/staging"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/BrainwavesReadingServingLayer')]",
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerAzureSQLREADING')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "BrainjammerAzureSQL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "READING_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SESSION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ELECTRODE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FREQUENCY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "READING_DATETIME",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "COUNT",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VALUE",
+						"type": "decimal",
+						"precision": 7,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "READING"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/BrainjammerAzureSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SynapseTmpReading')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azsynapseanalytics-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "SQLPool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "READING_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SESSION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ELECTRODE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FREQUENCY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "READING_DATETIME",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "COUNT",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VALUE",
+						"type": "decimal",
+						"precision": 8,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "brainwaves",
+					"table": "TmpREADING"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sampleBrainwavesParquet')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "EMEA/brainjammer/out/2022/04/03/17/sampleBrainwaves.parquet",
+						"fileSystem": "brainjammer"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "Timestamp",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF3theta",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF3alpha",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF3betaL",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF3betaH",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF3gamma",
+						"type": "UTF8"
+					},
+					{
+						"name": "T7theta",
+						"type": "UTF8"
+					},
+					{
+						"name": "T7alpha",
+						"type": "UTF8"
+					},
+					{
+						"name": "T7betaL",
+						"type": "UTF8"
+					},
+					{
+						"name": "T7betaH",
+						"type": "UTF8"
+					},
+					{
+						"name": "T7gamma",
+						"type": "UTF8"
+					},
+					{
+						"name": "Pztheta",
+						"type": "UTF8"
+					},
+					{
+						"name": "Pzalpha",
+						"type": "UTF8"
+					},
+					{
+						"name": "PzbetaL",
+						"type": "UTF8"
+					},
+					{
+						"name": "PzbetaH",
+						"type": "UTF8"
+					},
+					{
+						"name": "Pzgamma",
+						"type": "UTF8"
+					},
+					{
+						"name": "T8theta",
+						"type": "UTF8"
+					},
+					{
+						"name": "T8alpha",
+						"type": "UTF8"
+					},
+					{
+						"name": "T8betaL",
+						"type": "UTF8"
+					},
+					{
+						"name": "T8betaH",
+						"type": "UTF8"
+					},
+					{
+						"name": "T8gamma",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF4theta",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF4alpha",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF4betaL",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF4betaH",
+						"type": "UTF8"
+					},
+					{
+						"name": "AF4gamma",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureFileStorage1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureFileStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureFileStorage1_connectionString')]",
+					"fileShare": "brainjammer"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerAzureSQL')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('BrainjammerAzureSQL_properties_typeProperties_server')]",
+					"database": "[parameters('BrainjammerAzureSQL_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('BrainjammerAzureSQL_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('BrainjammerAzureSQL_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerCosmosDb')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "CosmosDb",
+				"typeProperties": {
+					"connectionString": "[parameters('BrainjammerCosmosDb_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/azsynapseanalytics-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('azsynapseanalytics-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/azsynapseanalytics-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('azsynapseanalytics-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				},
+				"managedVirtualNetwork": {
+					"type": "ManagedVirtualNetworkReference",
+					"referenceName": "default"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/managedVirtualNetworks/default')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainwavesReadingServingLayer')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "BrainjammerAzureSQLREADING",
+								"type": "DatasetReference"
+							},
+							"name": "BrainwavesReading"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SynapseTmpReading",
+								"type": "DatasetReference"
+							},
+							"name": "brainjammerTmpReading"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          READING_ID as integer,",
+						"          SESSION_ID as integer,",
+						"          ELECTRODE_ID as integer,",
+						"          FREQUENCY_ID as integer,",
+						"          READING_DATETIME as timestamp,",
+						"          COUNT as integer,",
+						"          VALUE as decimal(7,3)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> BrainwavesReading",
+						"BrainwavesReading sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          READING_ID as integer,",
+						"          SESSION_ID as integer,",
+						"          ELECTRODE_ID as integer,",
+						"          FREQUENCY_ID as integer,",
+						"          READING_DATETIME as timestamp,",
+						"          COUNT as integer,",
+						"          VALUE as decimal(8,3)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     staged: true,",
+						"     allowCopyCommand: true,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> brainjammerTmpReading"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/BrainjammerAzureSQLREADING')]",
+				"[concat(variables('workspaceId'), '/datasets/SynapseTmpReading')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/default')]",
+			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Buildexternaldatabase')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE EXTERNAL DATA SOURCE SampleBrainwavesSource\nWITH (LOCATION = 'abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net')\n\nCREATE EXTERNAL FILE FORMAT SampleBrainwavesParquet\nWITH  (FORMAT_TYPE = PARQUET) \n\nCREATE EXTERNAL TABLE SampleBrainwaves\n(\n [Timestamp] NVARCHAR(50),\n [AF3theta] NVARCHAR(50),\n [AF3alpha] NVARCHAR(50),\n [AF3betaL] NVARCHAR(50),\n [AF3betaH] NVARCHAR(50),\n [AF3gamma] NVARCHAR(50),\n [T7theta] NVARCHAR(50),\n [T7alpha] NVARCHAR(50),\n [T7betaL] NVARCHAR(50),\n [T7betaH] NVARCHAR(50),\n [T7gamma] NVARCHAR(50),\n [Pztheta] NVARCHAR(50),\n [Pzalpha] NVARCHAR(50),\n [PzbetaL] NVARCHAR(50),\n [PzbetaH] NVARCHAR(50),\n [Pzgamma] NVARCHAR(50),\n [T8theta] NVARCHAR(50),\n [T8alpha] NVARCHAR(50),\n [T8betaL] NVARCHAR(50),\n [T8betaH] NVARCHAR(50),\n [T8gamma] NVARCHAR(50),\n [AF4theta] NVARCHAR(50),\n [AF4alpha] NVARCHAR(50),\n [AF4betaL] NVARCHAR(50),\n [AF4betaH] NVARCHAR(50),\n [AF4gamma] NVARCHAR(50)\n)\nWITH \n(\n LOCATION = 'EMEA/brainjammer/out/2022/04/03/*/*.parquet/*',\n DATA_SOURCE = SampleBrainwavesSource,\n FILE_FORMAT = SampleBrainwavesParquet\n)\n\nSELECT TOP 10 * FROM SampleBrainwaves",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "BRAINJAMMER",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch04Ex05')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK (\n            'https://csharpguitarpublic.blob.core.windows.net/brainjammer/EMEA/brainjammer/in/2022/04/01/18/*.csv'\n        ),\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    ) AS [result]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT COUNT(*) FROM brainwaves.TmpREADING\nSELECT TOP(10) * FROM brainwaves.TmpREADING\nDELETE FROM brainwaves.TmpREADING",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SQLPool",
+						"poolName": "SQLPool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ConvertToParquet')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SparkPool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "0a62d8c5-35b6-4116-b12a-d05f7c7c3d5d"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+						"name": "SparkPool",
+						"type": "Spark",
+						"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/in/2022/04/10/10/ALL_SCENARIO_ELECTRODE_FREQUENCY_VALUE.csv', format='csv', header=True)\r\n",
+							"display(df.limit(10))\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df.write.mode(\"overwrite\").parquet('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/10/11/ALL_SCENARIO_ELECTRODE_FREQUENCY_VALUE.parquet')"
+						],
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "python"
+							}
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/10/11/ALL_SCENARIO_ELECTRODE_FREQUENCY_VALUE.parquet', format='parquet', header=True)\r\n",
+							"print(df.count())"
+						],
+						"outputs": [],
+						"execution_count": 5
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"from pyspark.sql.functions import year, month, col\r\n",
+							"df = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/10/11/ALL_SCENARIO_ELECTRODE_FREQUENCY_VALUE.parquet', format='parquet', header=True)\r\n",
+							"df_year_month_day = (df.withColumn(\"year\", year(col(\"SESSION_DATETIME\")))) \\\r\n",
+							"         .withColumn(\"month\", month(col(\"SESSION_DATETIME\")))\r\n",
+							"display(df_year_month_day.limit(10))"
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "python"
+							}
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"from pyspark.sql.functions import year, month, col\r\n",
+							"df_year_month_day.write.partitionBy(\"year\", \"month\") \\\r\n",
+							"  .mode(\"overwrite\") \\\r\n",
+							"  .parquet('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/raw-data/2022/04/10')"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/raw-data/2022/04/10/year=2021/month=7', format='parquet', header=True)\r\n",
+							"print(df.count())\r\n",
+							"display(df.limit(10))"
+						],
+						"outputs": [],
+						"execution_count": 10
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/HeaderUpdate')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SparkPool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "65998a0c-f0d1-482a-b62a-43d9c88e7c17"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+						"name": "SparkPool",
+						"type": "Spark",
+						"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.option(\"header\",\"true\") \\\r\n",
+							"  .csv('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/in/2022/04/01/18/*')\r\n",
+							"display(df.limit(10))\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "python"
+							}
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.option(\"header\",\"true\") \\\r\n",
+							"  .csv('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/in/2022/04/01/18/*')\r\n",
+							"headers = spark.createDataFrame([(\"Timestamp\", \"Timestamp\"), \r\n",
+							"  (\"AF3theta\", \"AF3/theta\"), (\"AF3alpha\", \"AF3/alpha\"), (\"AF3betaL\", \"AF3/betaL\"),\r\n",
+							"  (\"AF3betaH\", \"AF3/betaH\"), (\"AF3gamma\", \"AF3/gamma\"), (\"T7theta\", \"T7/theta\"), \r\n",
+							"  (\"T7alpha\", \"T7/alpha\"), (\"T7betaL\", \"T7/betaL\"), (\"T7betaH\", \"T7/betaH\"), \r\n",
+							"  (\"T7gamma\", \"T7/gamma\"), (\"Pztheta\", \"Pz/theta\"), (\"Pzalpha\", \"Pz/alpha\"), \r\n",
+							"  (\"PzbetaL\", \"Pz/betaL\"), (\"PzbetaH\", \"Pz/betaH\"), (\"Pzgamma\", \"Pz/gamma\"), \r\n",
+							"  (\"T8theta\", \"T8/theta\"), (\"T8alpha\", \"T8/alpha\"), (\"T8betaL\", \"T8/betaL\"), \r\n",
+							"  (\"T8betaH\", \"T8/betaH\"), (\"T8gamma\", \"T8/gamma\"), (\"AF4theta\", \"AF4/theta\"), \r\n",
+							"  (\"AF4alpha\", \"AF4/alpha\"), (\"AF4betaL\", \"AF4/betaL\"), (\"AF4betaH\", \"AF4/betaH\"), \r\n",
+							"  (\"AF4gamma\", \"AF4/gamma\")],['newHeader','oldHeader'])\r\n",
+							"newHeaders = headers.select('newHeader').rdd.flatMap(lambda x: x).collect()\r\n",
+							"dfh = df.toDF(*newHeaders)\r\n",
+							"dfh.write.mode(\"overwrite\").parquet('/EMEA/brainjammer/out/2022/04/03/17/sampleBrainwaves.parquet')"
+						],
+						"outputs": [],
+						"execution_count": 2
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SparkPool')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 6,
+					"minNodeCount": 3
+				},
+				"nodeCount": 3,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.4",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": true,
+				"customLibraries": [
+					{
+						"name": "brainjammer-0.0.1-py3-none-any.whl",
+						"path": "azsynapseanalytics/libraries/brainjammer-0.0.1-py3-none-any.whl",
+						"containerName": "prep",
+						"uploadedTimestamp": "0001-01-01T00:00:00+00:00",
+						"type": "whl"
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "swedencentral"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQLPool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "swedencentral"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/default/synapse-ws-custstgacct--azsynapseanalytics-csharpguitarpublic')]",
+			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks/managedPrivateEndpoints",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"privateLinkResourceId": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Storage/storageAccounts/csharpguitarpublic",
+				"groupId": "dfs",
+				"fqdns": [
+					"csharpguitarpublic.dfs.core.windows.net"
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/managedVirtualNetworks/default')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/default/synapse-ws-sql--azsynapseanalytics')]",
+			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks/managedPrivateEndpoints",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"privateLinkResourceId": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics",
+				"groupId": "sql",
+				"fqdns": [
+					"azsynapseanalytics.e08b47b9-e4cc-44f0-8611-7e6939748af7.sql.azuresynapse.net"
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/managedVirtualNetworks/default')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/default/synapse-ws-sqlOnDemand--azsynapseanalytics')]",
+			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks/managedPrivateEndpoints",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"privateLinkResourceId": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics",
+				"groupId": "sqlOnDemand",
+				"fqdns": [
+					"azsynapseanalytics-ondemand.e08b47b9-e4cc-44f0-8611-7e6939748af7.sql.azuresynapse.net"
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/managedVirtualNetworks/default')]"
+			]
+		}
+	]
+}

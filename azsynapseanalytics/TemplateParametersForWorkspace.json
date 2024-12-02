@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "azsynapseanalytics"
+		},
+		"AzureFileStorage1_connectionString": {
+			"value": ""
+		},
+		"BrainjammerAzureSQL_password": {
+			"value": ""
+		},
+		"BrainjammerCosmosDb_connectionString": {
+			"value": ""
+		},
+		"azsynapseanalytics-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:azsynapseanalytics.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"BrainjammerAzureSQL_properties_typeProperties_server": {
+			"value": "csharpguitar-azsqldb.database.windows.net"
+		},
+		"BrainjammerAzureSQL_properties_typeProperties_database": {
+			"value": "brainjammer"
+		},
+		"BrainjammerAzureSQL_properties_typeProperties_userName": {
+			"value": "Daria"
+		},
+		"azsynapseanalytics-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://csharpguitarpublic.dfs.core.windows.net"
+		}
+	}
+}
