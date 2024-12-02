@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "BrainjammerSynapseTmpReading",
+						"referenceName": "SynapseTmpReading",
 						"type": "DatasetReference"
 					},
 					"name": "brainjammerTmpReading"
