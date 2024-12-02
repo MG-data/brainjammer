@@ -1,0 +1,17 @@
+{
+	"name": "Ch04Ex05",
+	"properties": {
+		"content": {
+			"query": "SELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK (\n            'https://csharpguitarpublic.blob.core.windows.net/brainjammer/EMEA/brainjammer/in/2022/04/01/18/*.csv'\n        ),\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    ) AS [result]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
