@@ -1461,6 +1461,292 @@
 				]
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex05')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SparkPool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "c389f6a8-06ef-4ef3-9172-02e5c6876812"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+						"name": "SparkPool",
+						"type": "Spark",
+						"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/SessionCSV/BRAINWAVES_WITH_NULLS.csv',format='csv', header=True)\r\n",
+							"display(df.limit(10))"
+						],
+						"outputs": [],
+						"execution_count": 22
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df.filter(df.SESSION_DATETIME.isNull() | df.READING_DATETIME.isNull() \\\r\n",
+							"   | df.SCENARIO.isNull() | df.ELECTRODE.isNull() | df.FREQUENCY.isNull() \\\r\n",
+							"   | df.VALUE.isNull()).show()\r\n",
+							"print((df.count(), len(df.columns)))"
+						],
+						"outputs": [],
+						"execution_count": 23
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = df.na.drop(\"any\")\r\n",
+							"print((df.count(), len(df.columns)))\r\n",
+							"df.show()"
+						],
+						"outputs": [],
+						"execution_count": 25
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = df.filter(df.VALUE != '2X.n66').filter(df.VALUE != '4.c1..') \\\r\n",
+							"     .filter(df.READING_DATETIME != '7/40/2021  12:41:00 PM')\r\n",
+							"print((df.count(), len(df.columns)))"
+						],
+						"outputs": [],
+						"execution_count": 26
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = df.drop(df.SESSION_DATETIME, df. READING_DATETIME)\r\n",
+							"print((df.count(), len(df.columns)))"
+						],
+						"outputs": [],
+						"execution_count": 27
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex06')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "BrainjammerBrainwavesCSV",
+								"type": "DatasetReference"
+							},
+							"name": "BrainjammerBrainwavesCSV"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "BrainjammerBrainwavesSplitCSV",
+								"type": "DatasetReference"
+							},
+							"name": "BrainjammerBrainwavesSplitCSV"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          SESSION_DATETIME as timestamp 'MM/dd/yyyy HH:mm:ss',",
+						"          READING_DATETIME as timestamp 'MM/dd/yyyy HH:mm:ss',",
+						"          SCENARIO as string,",
+						"          ELECTRODE as string,",
+						"          FREQUENCY as string,",
+						"          VALUE as decimal(8,3) '000,000,000.000'",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> BrainjammerBrainwavesCSV",
+						"BrainjammerBrainwavesCSV sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('roundRobin', 60)) ~> BrainjammerBrainwavesSplitCSV"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/BrainjammerBrainwavesCSV')]",
+				"[concat(variables('workspaceId'), '/datasets/BrainjammerBrainwavesSplitCSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerBrainwavesCSV')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "BrainjammerBrainwaves.csv",
+						"folderPath": "EMEA/brainjammer/in/2022/04/26/17",
+						"fileSystem": "brainjammer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerBrainwavesSplitCSV')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "EMEA/brainjammer/out/2022/04/28/12",
+						"fileSystem": "brainjammer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]"
+			]
 		}
 	]
 }
