@@ -1179,7 +1179,6 @@
 							{
 								"activity": "MoveToTmpReading",
 								"dependencyConditions": [
-									"Succeeded",
 									"Completed"
 								]
 							}
