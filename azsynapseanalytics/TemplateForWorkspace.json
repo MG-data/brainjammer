@@ -86,6 +86,33 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "CreatePopulateFactReading",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "MoveToTmpReading",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "SQLPool",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[brainwaves].[uspCreateAndPopulateFactReading]"
+						}
 					}
 				],
 				"policy": {
@@ -96,7 +123,8 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/BrainwavesReadingServingLayer')]",
 				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/sqlPools/SQLPool')]"
 			]
 		},
 		{
@@ -612,26 +640,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "SELECT COUNT(*) FROM brainwaves.TmpREADING\nSELECT TOP(10) * FROM brainwaves.TmpREADING\nDELETE FROM brainwaves.TmpREADING",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "SQLPool",
-						"poolName": "SQLPool"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/ConvertToParquet')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -1026,6 +1034,26 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/managedVirtualNetworks/default')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/uspCreateAndPopulateFactReading')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE PROCEDURE brainwaves.uspCreateAndPopulateFactReading\nAS \n    CREATE TABLE [brainwaves].[FactREADING]\n    WITH\n    (\n    CLUSTERED COLUMNSTORE INDEX,\n    DISTRIBUTION = HASH ([FREQUENCY])\n    )\n    AS\n    SELECT  se.SESSION_DATETIME, r.READING_DATETIME, \n            s.SCENARIO, e.ELECTRODE, f.FREQUENCY, r.[VALUE]\n    FROM    [brainwaves].[DimSESSION] se, [brainwaves].[TmpREADING] r, \n            [brainwaves].[DimSCENARIO] s, [brainwaves].[DimELECTRODE] e, \n            [brainwaves].[DimFREQUENCY] f\n    WHERE   r.SESSION_ID = se.SESSION_ID AND se.SCENARIO_ID = s.SCENARIO_ID \n            AND r.ELECTRODE_ID = e.ELECTRODE_ID AND r.FREQUENCY_ID = f.FREQUENCY_ID;\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SQLPool",
+						"poolName": "SQLPool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
