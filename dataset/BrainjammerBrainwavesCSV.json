@@ -1,0 +1,43 @@
+{
+	"name": "BrainjammerBrainwavesCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "BrainjammerBrainwaves.csv",
+				"folderPath": "EMEA/brainjammer/in/2022/04/26/17",
+				"fileSystem": "brainjammer"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": false,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	}
+}

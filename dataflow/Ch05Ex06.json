@@ -1,0 +1,48 @@
+{
+	"name": "Ch05Ex06",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "BrainjammerBrainwavesCSV",
+						"type": "DatasetReference"
+					},
+					"name": "BrainjammerBrainwavesCSV"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "BrainjammerBrainwavesSplitCSV",
+						"type": "DatasetReference"
+					},
+					"name": "BrainjammerBrainwavesSplitCSV"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          SESSION_DATETIME as timestamp 'MM/dd/yyyy HH:mm:ss',",
+				"          READING_DATETIME as timestamp 'MM/dd/yyyy HH:mm:ss',",
+				"          SCENARIO as string,",
+				"          ELECTRODE as string,",
+				"          FREQUENCY as string,",
+				"          VALUE as decimal(8,3) '000,000,000.000'",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> BrainjammerBrainwavesCSV",
+				"BrainjammerBrainwavesCSV sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('roundRobin', 60)) ~> BrainjammerBrainwavesSplitCSV"
+			]
+		}
+	}
+}
