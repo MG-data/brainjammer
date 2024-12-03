@@ -1,0 +1,20 @@
+{
+	"name": "BrainjammerBrainwavesTmpParquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "EMEA/brainjammer/in/2022/04/28/16",
+				"fileSystem": "brainjammer"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

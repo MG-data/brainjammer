@@ -1,0 +1,50 @@
+{
+	"name": "Ch05Ex3",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "BrainjammerAzureSQLREADING",
+						"type": "DatasetReference"
+					},
+					"name": "BrainwavesREADING"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "BrainjammerBrainwavesTmpParquet",
+						"type": "DatasetReference"
+					},
+					"name": "brainjammerTmpReading"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          READING_ID as integer,",
+				"          SESSION_ID as integer,",
+				"          ELECTRODE_ID as integer,",
+				"          FREQUENCY_ID as integer,",
+				"          READING_DATETIME as timestamp,",
+				"          COUNT as integer,",
+				"          VALUE as decimal(7,3)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> BrainwavesREADING",
+				"BrainwavesREADING sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> brainjammerTmpReading"
+			]
+		}
+	}
+}
