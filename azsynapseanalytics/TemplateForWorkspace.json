@@ -1054,6 +1054,134 @@
 				"type": "SqlQuery"
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex3')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "BrainjammerAzureSQLREADING",
+								"type": "DatasetReference"
+							},
+							"name": "BrainwavesREADING"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "BrainjammerBrainwavesTmpParquet",
+								"type": "DatasetReference"
+							},
+							"name": "brainjammerTmpReading"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          READING_ID as integer,",
+						"          SESSION_ID as integer,",
+						"          ELECTRODE_ID as integer,",
+						"          FREQUENCY_ID as integer,",
+						"          READING_DATETIME as timestamp,",
+						"          COUNT as integer,",
+						"          VALUE as decimal(7,3)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> BrainwavesREADING",
+						"BrainwavesREADING sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> brainjammerTmpReading"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/BrainjammerAzureSQLREADING')]",
+				"[concat(variables('workspaceId'), '/datasets/BrainjammerBrainwavesTmpParquet')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerBrainwavesTmpParquet')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azsynapseanalytics-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "EMEA/brainjammer/in/2022/04/28/16",
+						"fileSystem": "brainjammer"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/IngestTransformBrainwavesReadingSpark')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "MoveToTmpReading",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Ch05Ex3",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"BrainwavesREADING": {},
+									"brainjammerTmpReading": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/Ch05Ex3')]"
+			]
 		}
 	]
 }
