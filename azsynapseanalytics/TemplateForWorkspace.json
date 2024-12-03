@@ -1182,6 +1182,251 @@
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/Ch05Ex3')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex3')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SparkPool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "2cbabfe2-b228-423a-a68e-f396f958dc5b"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+						"name": "SparkPool",
+						"type": "Spark",
+						"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/in/2022/04/28/16/*.parquet', format='parquet')\r\n",
+							"print(\"Total brainwave readings: \" + str(df.distinct().count()))\r\n",
+							"#display(df.limit(10))\r\n",
+							"df.createOrReplaceTempView(\"TmpREADING\")"
+						],
+						"outputs": [],
+						"execution_count": 16
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# LOAD MODE\r\n",
+							"dfMODE = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/Tables/MODE.csv', format='csv', header=True)\r\n",
+							"#display(dfMODE.limit(10))\r\n",
+							"dfMODE.createOrReplaceTempView(\"MODE\")\r\n",
+							"#print(\"MODEs: \" + str(dfMODE.distinct().count()))"
+						],
+						"outputs": [],
+						"execution_count": 6
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# LOAD ELECTRODE\r\n",
+							"dfELECTRODE = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/Tables/ELECTRODE.csv', format='csv', header=True)\r\n",
+							"#display(dfELECTRODE.limit(10))\r\n",
+							"dfELECTRODE.createOrReplaceTempView(\"ELECTRODE\")\r\n",
+							"#print(\"ELECTRODEs: \" + str(dfELECTRODE.distinct().count()))"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# LOAD FREQUENCY\r\n",
+							"dfFREQUENCY = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/Tables/FREQUENCY.csv', format='csv', header=True)\r\n",
+							"#display(dfFREQUENCY.limit(10))\r\n",
+							"dfFREQUENCY.createOrReplaceTempView(\"FREQUENCY\")\r\n",
+							"#print(\"FREQUENCYs: \" + str(dfFREQUENCY.distinct().count()))"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# LOAD SCENARIO\r\n",
+							"dfSCENARIO = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/Tables/SCENARIO.csv', format='csv', header=True)\r\n",
+							"#display(dfSCENARIO.limit(10))\r\n",
+							"dfSCENARIO.createOrReplaceTempView(\"SCENARIO\")\r\n",
+							"#print(\"SCENARIOs: \" + str(dfSCENARIO.distinct().count()))"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# LOAD SESSION\r\n",
+							"dfSESSION = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/Tables/SESSIONALL.csv', format='csv', header=True)\r\n",
+							"#display(dfSESSION.limit(10))\r\n",
+							"dfSESSION.createOrReplaceTempView(\"SESSION\")\r\n",
+							"#print(\"SESSIONs: \" + str(dfSESSION.distinct().count()))"
+						],
+						"outputs": [],
+						"execution_count": 14
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"dfREADING = sqlContext.sql(\"\"\"\r\n",
+							"    SELECT  se.SESSION_DATETIME, r.READING_DATETIME, \r\n",
+							"            s.SCENARIO, e.ELECTRODE, f.FREQUENCY, r.VALUE\r\n",
+							"    FROM    SESSION se, TmpREADING r, SCENARIO s, \r\n",
+							"            ELECTRODE e, FREQUENCY f\r\n",
+							"    WHERE   r.SESSION_ID = se.SESSION_ID AND se.SCENARIO_ID = s.SCENARIO_ID \r\n",
+							"            AND r.ELECTRODE_ID = e.ELECTRODE_ID AND r.FREQUENCY_ID = f.FREQUENCY_ID\r\n",
+							"\"\"\")\r\n",
+							"#print(\"READINGs: \" + str(dfREADING.distinct().count()))\r\n",
+							"#display(dfREADING.limit(10))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"dfREADING.write.parquet('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/28/17/BrainjammerBrainwavesSpark.parquet')\r\n",
+							"#dfFactREADING = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/28/17/BrainjammerBrainwavesSpark.parquet', format='parquet')\r\n",
+							"#print(\"Total brainwave readings: \" + str(dfFactREADING.distinct().count()))\r\n",
+							"display(dfFactREADING.limit(100))"
+						],
+						"outputs": [],
+						"execution_count": 20
+					}
+				]
+			},
+			"dependsOn": []
 		}
 	]
 }
