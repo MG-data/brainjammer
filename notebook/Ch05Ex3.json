@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "106bdf30-2d54-4d7f-84c5-02c89c58cf2f"
+				"spark.autotune.trackingId": "26e27b29-192b-4ee3-894d-0bec2a0f270a"
 			}
 		},
 		"metadata": {
@@ -225,7 +225,7 @@
 					"dfREADING.write.parquet('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/28/17/BrainjammerBrainwavesSpark.parquet')\r\n",
 					"#dfFactREADING = spark.read.load('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/out/2022/04/28/17/BrainjammerBrainwavesSpark.parquet', format='parquet')\r\n",
 					"#print(\"Total brainwave readings: \" + str(dfFactREADING.distinct().count()))\r\n",
-					"display(dfFactREADING.limit(100))"
+					"#display(dfFactREADING.limit(100))"
 				],
 				"execution_count": 20
 			}
