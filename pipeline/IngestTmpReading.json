@@ -32,6 +32,33 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "CreatePopulateFactReading",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "MoveToTmpReading",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SQLPool",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[brainwaves].[uspCreateAndPopulateFactReading]"
+				}
 			}
 		],
 		"annotations": []
