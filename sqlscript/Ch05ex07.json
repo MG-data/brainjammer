@@ -1,0 +1,17 @@
+{
+	"name": "Ch05ex07",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP 10 Scenario, ReadingDate, \n        AF3THETA, AF3ALPHA, AF3BETA_L, AF3BETA_H, AF3GAMMA,\n        AF4THETA, AF4ALPHA, AF4BETA_L, AF4BETA_H, AF4GAMMA,\n        T7THETA, T7ALPHA, T7BETA_L, T7BETA_H, T7GAMMA,\n        T8THETA, T8ALPHA, T8BETA_L, T8BETA_H, T8GAMMA,\n        PzTHETA, PzALPHA, PzBETA_L, PzBETA_H, PzGAMMA\nFROM OPENROWSET(PROVIDER = 'CosmosDB',\n                CONNECTION = 'Account=csharpguitar-cosmosdb;Database=brainjammer;Key=Primary or Secondary in CosmoDB resource key tab',\n                OBJECT = 'sessions')\nWITH ( Scenario varchar(max) '$.Session.Scenario',  POWReading varchar(max) '$.Session.POWReading') AS readings\nCROSS APPLY OPENJSON(readings.POWReading) AS reading\nCROSS APPLY OPENJSON(reading.[value])\n    WITH (\n        ReadingDate varchar(50),\n        AF3THETA decimal(7,3) '$.AF3[0].THETA', \n        AF3ALPHA decimal(7,3) '$.AF3[0].ALPHA', AF3BETA_L decimal(7,3) '$.AF3[0].BETA_L', \n        AF3BETA_H decimal(7,3) '$.AF3[0].BETA_H', AF3GAMMA decimal(7,3) '$.AF3[0].GAMMA',\n        AF4THETA decimal(7,3) '$.AF4[0].THETA', \n        AF4ALPHA decimal(7,3) '$.AF4[0].ALPHA', AF4BETA_L decimal(7,3) '$.AF4[0].BETA_L', \n        AF4BETA_H decimal(7,3) '$.AF4[0].BETA_H', AF4GAMMA decimal(7,3) '$.AF4[0].GAMMA',\n        T7THETA decimal(7,3) '$.T7[0].THETA', \n        T7ALPHA decimal(7,3) '$.T7[0].ALPHA', T7BETA_L decimal(7,3) '$.T7[0].BETA_L', \n        T7BETA_H decimal(7,3) '$.T7[0].BETA_H', T7GAMMA decimal(7,3) '$.T7[0].GAMMA',\n        T8THETA decimal(7,3) '$.T8[0].THETA', \n        T8ALPHA decimal(7,3) '$.T8[0].ALPHA', T8BETA_L decimal(7,3) '$.T8[0].BETA_L', \n        T8BETA_H decimal(7,3) '$.T8[0].BETA_H', T8GAMMA decimal(7,3) '$.T8[0].GAMMA',\n        PzTHETA decimal(7,3) '$.Pz[0].THETA', \n        PzALPHA decimal(7,3) '$.Pz[0].ALPHA', PzBETA_L decimal(7,3) '$.Pz[0].BETA_L', \n        PzBETA_H decimal(7,3) '$.Pz[0].BETA_H', PzGAMMA decimal(7,3) '$.Pz[0].GAMMA'\n    ) AS brainwave\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
