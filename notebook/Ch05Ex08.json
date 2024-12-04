@@ -1,0 +1,144 @@
+{
+	"name": "Ch05Ex08",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SparkPool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "96538873-e0b5-4d7a-b938-1463f38639d1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+				"name": "SparkPool",
+				"type": "Spark",
+				"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"microsoft": {
+						"language": "python"
+					}
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"from pyspark.sql.functions import explode, col\r\n",
+					"df = spark.read.option('multiline', 'true') \\\r\n",
+					"  .json('abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/SessionJson/PlayingGuitar/POW/csharpguitar-brainjammer-pow-0914.json')\r\n",
+					"flatten = df.select('Session')\r\n",
+					"flatten.show()"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"flatten = df.select('Session', 'Session.Scenario','Session.POWReading.ReadingDate', 'Session.POWReading')\r\n",
+					"flatten.show()"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"exploded = df.select(col('Session.Scenario').alias('SCENARIO'), explode('Session.POWReading').alias('READING'))\r\n",
+					"exploded.printSchema()\r\n",
+					"exploded.show(5)"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"shredded = exploded.select('SCENARIO', \r\n",
+					"    col('READING.AF3.THETA').alias('AF3THETA'), \r\n",
+					"    col('READING.AF3.ALPHA').alias('AF3ALPHA'), col('READING.AF3.BETA_L').alias('AF3BETA_L'),\r\n",
+					"    col('READING.AF3.BETA_H').alias('AF3BETA_H'), col('READING.AF3.GAMMA').alias('AF34GAMMA'),\r\n",
+					"    col('READING.AF4.THETA').alias('AF4THETA'), \r\n",
+					"    col('READING.AF4.ALPHA').alias('AF4ALPHA'), col('READING.AF4.BETA_L').alias('AF4BETA_L'),\r\n",
+					"    col('READING.AF4.BETA_H').alias('AF4BETA_H'), col('READING.AF4.GAMMA').alias('AF4GAMMA'),\r\n",
+					"    col('READING.T7.THETA').alias('T7THETA'), \r\n",
+					"    col('READING.T7.ALPHA').alias('T7ALPHA'), col('READING.T7.BETA_L').alias('T7BETA_L'),\r\n",
+					"    col('READING.T7.BETA_H').alias('T7BETA_H'), col('READING.T7.GAMMA').alias('T7GAMMA'),\r\n",
+					"    col('READING.T8.THETA').alias('T8THETA'), \r\n",
+					"    col('READING.T8.ALPHA').alias('T8ALPHA'), col('READING.T8.BETA_L').alias('T8BETA_L'),\r\n",
+					"    col('READING.T8.BETA_H').alias('T8BETA_H'), col('READING.T8.GAMMA').alias('T8GAMMA'),\r\n",
+					"    col('READING.Pz.THETA').alias('PzTHETA'), \r\n",
+					"    col('READING.Pz.ALPHA').alias('PzALPHA'), col('READING.Pz.BETA_L').alias('PzBETA_L'),\r\n",
+					"    col('READING.Pz.BETA_H').alias('PzBETA_H'), col('READING.Pz.GAMMA').alias('PzGAMMA'))\r\n",
+					"#exploded.printSchema()\r\n",
+					"shredded.show(5)"
+				],
+				"execution_count": 5
+			}
+		]
+	}
+}
