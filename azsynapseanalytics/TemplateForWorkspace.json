@@ -2560,7 +2560,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "f5c4efe8-7cc5-43b5-93d9-e740c627505a"
+						"spark.autotune.trackingId": "8e1278b7-6c04-4908-bc0d-07c1a40cbf6d"
 					}
 				},
 				"metadata": {
@@ -2568,7 +2568,7 @@
 					"enableDebugMode": false,
 					"kernelspec": {
 						"name": "synapse_pyspark",
-						"display_name": "python"
+						"display_name": "Synapse PySpark"
 					},
 					"language_info": {
 						"name": "scala"
@@ -2617,9 +2617,13 @@
 								"transient": {
 									"deleting": false
 								}
+							},
+							"microsoft": {
+								"language": "python"
 							}
 						},
 						"source": [
+							"%%pyspark\r\n",
 							"from pyspark.ml.feature import MinMaxScaler\r\n",
 							"from pyspark.ml.feature import VectorAssembler\r\n",
 							"from pyspark.ml import Pipeline\r\n",
@@ -2639,7 +2643,7 @@
 							"df.write.mode(\"overwrite\").option(\"header\", \"true\").csv(\"abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/EMEA/brainjammer/in/2022/05/19/15/NormalizedBrainwavesSE.csv\")"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 1
 					}
 				]
 			},
