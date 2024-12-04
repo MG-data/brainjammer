@@ -374,7 +374,14 @@
 					{
 						"name": "CREATE FactREADING",
 						"type": "Script",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Filter Outliers",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -520,6 +527,7 @@
 				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultSqlServer')]",
 				"[concat(variables('workspaceId'), '/dataflows/Ch05Ex13F')]",
 				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/notebooks/Ch05Ex13TB')]",
 				"[concat(variables('workspaceId'), '/bigDataPools/SparkPool')]",
 				"[concat(variables('workspaceId'), '/notebooks/Ch05Ex13N')]"
@@ -2095,7 +2103,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "cb246f2e-f506-4408-b573-563dcfdd3970"
+						"spark.autotune.trackingId": "1f202ca3-5c65-4180-8082-ca5450355eb7"
 					}
 				},
 				"metadata": {
