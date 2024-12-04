@@ -1,0 +1,17 @@
+{
+	"name": "Ch05Ex09",
+	"properties": {
+		"content": {
+			"query": "SELECT DATABASEPROPERTYEX(DB_NAME(), 'Collation') AS Collation; --SQL_Latin1_General_CP1_CI_AS\n\nCREATE TABLE [dbo].[ENCODE] (\n    [ENCODE_ID] \tINT\t\tNOT NULL,\n    [ENCODE]\t\tVARCHAR (1)\tNOT NULL --represented as 1 byte in UTF-8\n)\nGO\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (1, '殽')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (2, 'Ž')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (3, 'ß')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (4, '€')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (5, '陽')\n\nSELECT * FROM [dbo].[ENCODE] ORDER BY [ENCODE_ID]\n\nCREATE TABLE [dbo].[ENCODEN] (\n    [ENCODE_ID] \tINT\t\tNOT NULL,\n    [ENCODE]\t\tNVARCHAR (1)\tNOT NULL --represented as 2 or more bytes in UTF-16\n)\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (1, N'殽')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (2, 'Ž')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (3, 'ß')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (4, '€')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (5, N'陽')\n\nSELECT * FROM [dbo].[ENCODEN] ORDER BY [ENCODE_ID]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SQLPool",
+				"poolName": "SQLPool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
