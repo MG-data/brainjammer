@@ -200,6 +200,37 @@
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
 				}
+			},
+			{
+				"name": "NORMALIZE",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "AGGREGATE",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "Ch05Ex13N",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": "SparkPool",
+						"type": "BigDataPoolReference"
+					}
+				}
 			}
 		],
 		"annotations": []
