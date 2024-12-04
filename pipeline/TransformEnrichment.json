@@ -104,6 +104,66 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "CREATE FactREADING",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "azsynapseanalytics-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "SQLPool"
+					}
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "CREATE TABLE [brainwaves].[FactREADING]\n  WITH\n  (\n    CLUSTERED COLUMNSTORE INDEX,\n    DISTRIBUTION = HASH ([FREQUENCY])\n  )\n    AS\n    SELECT  se.SESSION_DATETIME, r.READING_DATETIME, \n            s.SCENARIO, e.ELECTRODE, f.FREQUENCY, r.[VALUE]\n    FROM    [brainwaves].[DimSESSION] se, [staging].[TmpREADING] r, \n            [brainwaves].[DimSCENARIO] s, [brainwaves].[DimELECTRODE] e, \n            [brainwaves].[DimFREQUENCY] f\n    WHERE   r.SESSION_ID = se.SESSION_ID AND se.SCENARIO_ID = s.SCENARIO_ID \n            AND r.ELECTRODE_ID = e.ELECTRODE_ID AND r.FREQUENCY_ID = f.FREQUENCY_ID"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "CONVERT Parquet",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "CREATE FactREADING",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "Ch05Ex13TB",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": "SparkPool",
+						"type": "BigDataPoolReference"
+					}
+				}
 			}
 		],
 		"annotations": []
