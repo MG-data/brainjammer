@@ -1,0 +1,60 @@
+{
+	"name": "Ch05Ex13F",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SynapseTmpReading",
+						"type": "DatasetReference"
+					},
+					"name": "TmpREADING"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsstagedTmpREADING",
+						"type": "DatasetReference"
+					},
+					"name": "StagedTmpREADING"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Filteroutliers"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          READING_ID as integer,",
+				"          SESSION_ID as integer,",
+				"          ELECTRODE_ID as integer,",
+				"          FREQUENCY_ID as integer,",
+				"          READING_DATETIME as timestamp,",
+				"          COUNT as integer,",
+				"          VALUE as decimal(8,3)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table',",
+				"     staged: true) ~> TmpREADING",
+				"TmpREADING filter(VALUE > 0.274 && VALUE < 392) ~> Filteroutliers",
+				"Filteroutliers sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> StagedTmpREADING"
+			]
+		}
+	}
+}

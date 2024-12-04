@@ -1,0 +1,19 @@
+{
+	"name": "AzureSynapseAnalyticsstagedTmpREADING",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azsynapseanalytics-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "SQLPool"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "staging",
+			"table": "TmpREADING"
+		}
+	}
+}
