@@ -1,0 +1,103 @@
+{
+	"name": "Ch05Ex10",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SparkPool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "86f905fc-da3c-490d-a573-4eef68cd6072"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+				"name": "SparkPool",
+				"type": "Spark",
+				"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.ml.feature import MinMaxScaler\r\n",
+					"from pyspark.ml.feature import VectorAssembler\r\n",
+					"from pyspark.ml import Pipeline\r\n",
+					"from pyspark.sql.functions import udf\r\n",
+					"from pyspark.sql.types import DoubleType\r\n",
+					"\r\n",
+					"df = spark.createDataFrame([ ('TikTok', 'ALPHA',8.037698,28.50230489,812.381384,2.374,1.540779024,5.635876),\r\n",
+					"                             ('TikTok', 'BETA_H',4.157344,15.90465452,252.9580353,1.387,1.177709642,1.923769),\r\n",
+					"                             ('TikTok', 'BETA_L',5.616911,23.43532765,549.2145819,1.847,1.359043781,3.411409),\r\n",
+					"                             ('TikTok', 'GAMMA',2.259732,8.469464627,71.73183106,0.898,0.947628619,0.806404),\r\n",
+					"                             ('TikTok', 'THETA',18.7486,39.01921698,1522.499294,3.54,1.881488772,12.5316)], \r\n",
+					"                             [\"SCENARIO\", \"FREQUENCY\",\"AVERAGE\",\"STANDARDDEV\", \"VARIANCE\", \"MEDIAN\", \"SQUAREROOT\", \"SQUARED\"])\r\n",
+					"                            \r\n",
+					"print(\"Before normalization :\")\r\n",
+					"df.show()\r\n",
+					""
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"unlist = udf(lambda x: round(float(list(x)[0]),3), DoubleType())\r\n",
+					"\r\n",
+					"for b in [\"AVERAGE\",\"STANDARDDEV\", \"VARIANCE\", \"MEDIAN\", \"SQUAREROOT\", \"SQUARED\"]:\r\n",
+					"    assembler = VectorAssembler(inputCols=[b],outputCol=b+\"_Vect\")\r\n",
+					"    scaler = MinMaxScaler(inputCol=b+\"_Vect\", outputCol=b+\"_Scaled\")\r\n",
+					"    pipeline = Pipeline(stages=[assembler, scaler])\r\n",
+					"    df = pipeline.fit(df).transform(df).withColumn(b+\"_Scaled\", unlist(b+\"_Scaled\")).drop(b+\"_Vect\")\r\n",
+					"\r\n",
+					"print(\"After normalization :\")\r\n",
+					"df.show()"
+				],
+				"execution_count": 8
+			}
+		]
+	}
+}
