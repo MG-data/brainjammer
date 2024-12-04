@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "Ch05Ex3",
+						"referenceName": "Ch05Ex03",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -47,14 +47,20 @@
 				"userProperties": [],
 				"typeProperties": {
 					"notebook": {
-						"referenceName": "Ch05Ex3",
+						"referenceName": "Ch05Ex03",
 						"type": "NotebookReference"
 					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": "SparkPool",
 						"type": "BigDataPoolReference"
-					}
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"numExecutors": null
 				}
 			}
 		],
