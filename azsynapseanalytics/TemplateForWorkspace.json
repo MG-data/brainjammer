@@ -88,7 +88,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/dataflows/Ch05Ex06')]"
+				"[concat(variables('workspaceId'), '/dataflows/Ch05Ex06')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -1967,6 +1968,229 @@
 				]
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex09')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT DATABASEPROPERTYEX(DB_NAME(), 'Collation') AS Collation; --SQL_Latin1_General_CP1_CI_AS\n\nCREATE TABLE [dbo].[ENCODE] (\n    [ENCODE_ID] \tINT\t\tNOT NULL,\n    [ENCODE]\t\tVARCHAR (1)\tNOT NULL --represented as 1 byte in UTF-8\n)\nGO\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (1, '殽')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (2, 'Ž')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (3, 'ß')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (4, '€')\nINSERT INTO [dbo].[ENCODE] ([ENCODE_ID], [ENCODE]) VALUES (5, '陽')\n\nSELECT * FROM [dbo].[ENCODE] ORDER BY [ENCODE_ID]\n\nCREATE TABLE [dbo].[ENCODEN] (\n    [ENCODE_ID] \tINT\t\tNOT NULL,\n    [ENCODE]\t\tNVARCHAR (1)\tNOT NULL --represented as 2 or more bytes in UTF-16\n)\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (1, N'殽')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (2, 'Ž')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (3, 'ß')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (4, '€')\nINSERT INTO [dbo].[ENCODEN] ([ENCODE_ID], [ENCODE]) VALUES (5, N'陽')\n\nSELECT * FROM [dbo].[ENCODEN] ORDER BY [ENCODE_ID]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SQLPool",
+						"poolName": "SQLPool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex10')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SparkPool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "86f905fc-da3c-490d-a573-4eef68cd6072"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/612492b7-fc72-4f78-a627-fccbfbbc32de/resourceGroups/csharpguitar/providers/Microsoft.Synapse/workspaces/azsynapseanalytics/bigDataPools/SparkPool",
+						"name": "SparkPool",
+						"type": "Spark",
+						"endpoint": "https://azsynapseanalytics.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"from pyspark.ml.feature import MinMaxScaler\r\n",
+							"from pyspark.ml.feature import VectorAssembler\r\n",
+							"from pyspark.ml import Pipeline\r\n",
+							"from pyspark.sql.functions import udf\r\n",
+							"from pyspark.sql.types import DoubleType\r\n",
+							"\r\n",
+							"df = spark.createDataFrame([ ('TikTok', 'ALPHA',8.037698,28.50230489,812.381384,2.374,1.540779024,5.635876),\r\n",
+							"                             ('TikTok', 'BETA_H',4.157344,15.90465452,252.9580353,1.387,1.177709642,1.923769),\r\n",
+							"                             ('TikTok', 'BETA_L',5.616911,23.43532765,549.2145819,1.847,1.359043781,3.411409),\r\n",
+							"                             ('TikTok', 'GAMMA',2.259732,8.469464627,71.73183106,0.898,0.947628619,0.806404),\r\n",
+							"                             ('TikTok', 'THETA',18.7486,39.01921698,1522.499294,3.54,1.881488772,12.5316)], \r\n",
+							"                             [\"SCENARIO\", \"FREQUENCY\",\"AVERAGE\",\"STANDARDDEV\", \"VARIANCE\", \"MEDIAN\", \"SQUAREROOT\", \"SQUARED\"])\r\n",
+							"                            \r\n",
+							"print(\"Before normalization :\")\r\n",
+							"df.show()\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"\r\n",
+							"unlist = udf(lambda x: round(float(list(x)[0]),3), DoubleType())\r\n",
+							"\r\n",
+							"for b in [\"AVERAGE\",\"STANDARDDEV\", \"VARIANCE\", \"MEDIAN\", \"SQUAREROOT\", \"SQUARED\"]:\r\n",
+							"    assembler = VectorAssembler(inputCols=[b],outputCol=b+\"_Vect\")\r\n",
+							"    scaler = MinMaxScaler(inputCol=b+\"_Vect\", outputCol=b+\"_Scaled\")\r\n",
+							"    pipeline = Pipeline(stages=[assembler, scaler])\r\n",
+							"    df = pipeline.fit(df).transform(df).withColumn(b+\"_Scaled\", unlist(b+\"_Scaled\")).drop(b+\"_Vect\")\r\n",
+							"\r\n",
+							"print(\"After normalization :\")\r\n",
+							"df.show()"
+						],
+						"outputs": [],
+						"execution_count": 8
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Ch05Ex11')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT COUNT(*) FROM brainwaves.FactREADING\n\nSELECT COUNT(*) AS distinct_row_count\nFROM (\n    SELECT DISTINCT *\n    FROM brainwaves.FactREADING\n) AS distinct_rows;\n\n--4539223\nSELECT COUNT(*)\nFROM brainwaves.FactREADING\nWHERE [VALUE] < 0.274 OR [VALUE] > 392\n--99278\n\nSELECT * INTO brainwaves.FactREADINGHighLow\nFROM brainwaves.FactREADING\nWHERE [VALUE] < 0.274 OR [VALUE] > 392  \nSELECT COUNT(*) FROM brainwaves.FactREADINGHighLow\n\n--99278\nDELETE FROM brainwaves.FactREADING WHERE [VALUE] < 0.274\nDELETE FROM brainwaves.FactREADING WHERE [VALUE] > 392\nSELECT COUNT(*) FROM brainwaves.FactREADING\n--4438073\n\n\nCREATE TABLE [brainwaves].[SCENARIO]\nWITH\n(\n  CLUSTERED COLUMNSTORE INDEX,\n  DISTRIBUTION = REPLICATE\n)\nAS\nSELECT DISTINCT SCENARIO,\n       AVG([VALUE]) OVER (partition by SCENARIO) as AVERAGE,\n       STDEV([VALUE]) OVER (partition by SCENARIO) as STANDARDDEV,\n       VAR([VALUE]) OVER (partition by SCENARIO) as VARIANCE,\n       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO) as MEDIAN,\n       SQRT(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO)) AS SQUAREROOT,\n       SQUARE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO)) AS SQUARED\nFROM brainwaves.FactREADING\nGO\nSELECT * FROM [brainwaves].[SCENARIO] ORDER BY SCENARIO\nGO\n\n\nCREATE TABLE [brainwaves].[ELECTRODE]\nWITH\n(\n  CLUSTERED COLUMNSTORE INDEX,\n  DISTRIBUTION = REPLICATE\n)\nAS\nSELECT DISTINCT ELECTRODE,\n       AVG([VALUE]) OVER (partition by ELECTRODE) as AVERAGE, \n       STDEV([VALUE]) OVER (partition by ELECTRODE) as STANDARDDEV,\n       VAR([VALUE]) OVER (partition by ELECTRODE) as VARIANCE,\n       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by ELECTRODE) as MEDIAN,\n       SQRT(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by ELECTRODE)) AS SQUAREROOT,\n       SQUARE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by ELECTRODE)) AS SQUARED\nFROM brainwaves.FactREADING\nGO\nSELECT * FROM [brainwaves].[ELECTRODE] ORDER BY ELECTRODE\nGO\n\n###\nCREATE TABLE [brainwaves].[FREQUENCY]\nWITH\n(\n  CLUSTERED COLUMNSTORE INDEX,\n  DISTRIBUTION = REPLICATE\n)\nAS\nSELECT DISTINCT FREQUENCY,\n       AVG([VALUE]) OVER (partition by FREQUENCY) as AVERAGE,\n       STDEV([VALUE]) OVER (partition by FREQUENCY) as STANDARDDEV,\n       VAR([VALUE]) OVER (partition by FREQUENCY) as VARIANCE,\n       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by FREQUENCY) as MEDIAN,\n       SQRT(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by FREQUENCY)) AS SQUAREROOT,\n       SQUARE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by FREQUENCY)) AS SQUARED\nFROM brainwaves.FactREADING\nGO\nSELECT * FROM [brainwaves].[FREQUENCY] ORDER BY FREQUENCY\nGO\n\n\n## \nCREATE TABLE [brainwaves].[SCENARIO_ELECTRODE]\nWITH\n(\n  CLUSTERED COLUMNSTORE INDEX,\n  DISTRIBUTION = REPLICATE\n)\nAS\nSELECT DISTINCT SCENARIO, ELECTRODE,\n       AVG([VALUE]) OVER (partition by SCENARIO, ELECTRODE) as AVERAGE, \n       STDEV([VALUE]) OVER (partition by SCENARIO, ELECTRODE) as STANDARDDEV,\n       VAR([VALUE]) OVER (partition by SCENARIO, ELECTRODE) as VARIANCE,\n       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, ELECTRODE) as MEDIAN,\n       SQRT(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, ELECTRODE)) AS SQUAREROOT,\n       SQUARE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, ELECTRODE)) AS SQUARED\nFROM brainwaves.FactREADING\nGO\nSELECT * FROM [brainwaves].[SCENARIO_ELECTRODE] ORDER BY SCENARIO, ELECTRODE\nGO\n\n##\nCREATE TABLE [brainwaves].[SCENARIO_FREQUENCY]\nWITH\n(\n  CLUSTERED COLUMNSTORE INDEX,\n  DISTRIBUTION = REPLICATE\n)\nAS\nSELECT DISTINCT SCENARIO, FREQUENCY,\n       AVG([VALUE]) OVER (partition by SCENARIO, FREQUENCY) as AVERAGE,\n       STDEV([VALUE]) OVER (partition by SCENARIO, FREQUENCY) as STANDARDDEV,\n       VAR([VALUE]) OVER (partition by SCENARIO, FREQUENCY) as VARIANCE,\n       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, FREQUENCY) as MEDIAN,\n       SQRT(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, FREQUENCY)) AS SQUAREROOT,\n       SQUARE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, FREQUENCY)) AS SQUARED\nFROM brainwaves.FactREADING\nGO\nSELECT * FROM [brainwaves].[SCENARIO_FREQUENCY] WHERE SCENARIO = 'TikTok' ORDER BY SCENARIO, FREQUENCY\nGO\n\n\n##\nCREATE TABLE [brainwaves].[SCENARIO_ELECTRODE_FREQUENCY]\nWITH\n(\n  CLUSTERED COLUMNSTORE INDEX,\n  DISTRIBUTION = REPLICATE\n)\nAS\nSELECT DISTINCT SCENARIO, ELECTRODE, FREQUENCY,\n       AVG([VALUE]) OVER (partition by SCENARIO, ELECTRODE, FREQUENCY) as AVERAGE,\n       STDEV([VALUE]) OVER (partition by SCENARIO, ELECTRODE, FREQUENCY) as STANDARDDEV,\n       VAR([VALUE]) OVER (partition by SCENARIO, ELECTRODE, FREQUENCY) as VARIANCE,\n       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, ELECTRODE, FREQUENCY) as MEDIAN,\n       SQRT(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, ELECTRODE, FREQUENCY)) AS SQUAREROOT,\n       SQUARE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY [VALUE]) OVER (partition by SCENARIO, ELECTRODE, FREQUENCY)) AS SQUARED\nFROM brainwaves.FactREADING\nGO\nSELECT * FROM [brainwaves].[SCENARIO_ELECTRODE_FREQUENCY] ORDER BY SCENARIO, ELECTRODE, FREQUENCY\n\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SQLPool",
+						"poolName": "SQLPool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/TransformEnrichment')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "DropTable",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "azsynapseanalytics-WorkspaceDefaultSqlServer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"DBName": "SQLPool"
+							}
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": "IF OBJECT_ID (N'brainwaves.FactREADING', N'U') IS NOT NULL\n DROP TABLE [brainwaves].[FactREADING]\nIF OBJECT_ID (N'brainwaves.SCENARIO_FREQUENCY', N'U') IS NOT NULL\n DROP TABLE [brainwaves].[SCENARIO_FREQUENCY]"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "SETUP Staging",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "azsynapseanalytics-WorkspaceDefaultSqlServer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"DBName": "SQLPool"
+							}
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": "IF OBJECT_ID (N'staging.TmpREADING', N'U') IS NOT NULL\n DELETE FROM [staging].[TmpREADING]\nELSE\n  CREATE TABLE [staging].[TmpREADING]\n  ( \n    [READING_ID] [int]  NOT NULL,\n    [SESSION_ID] [int]  NOT NULL,\n    [ELECTRODE_ID] [int]  NOT NULL,\n    [FREQUENCY_ID] [int]  NOT NULL,\n    [READING_DATETIME] [datetime]  NOT NULL,\n    [COUNT] [int]  NOT NULL,\n    [VALUE] [decimal](8,3)  NOT NULL\n  )\n  WITH\n  (\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n  )"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultSqlServer')]"
+			]
 		}
 	]
 }
