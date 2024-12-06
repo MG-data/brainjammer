@@ -5,7 +5,16 @@
 		"workspaceName": {
 			"value": "azsynapseanalytics"
 		},
+		"ADLSBatch_connectionString": {
+			"value": ""
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
 		"AzureFileStorage1_connectionString": {
+			"value": ""
+		},
+		"BrainjammerAzureBatch_accessKey": {
 			"value": ""
 		},
 		"BrainjammerAzureSQL_password": {
@@ -17,14 +26,14 @@
 		"azsynapseanalytics-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:azsynapseanalytics.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
-		"AzureBlobStorage1_connectionString": {
-			"value": ""
+		"BrainjammerAzureBatch_properties_typeProperties_batchUri": {
+			"value": "https://brainjammer.swedencentral.batch.azure.com"
 		},
-		"ADLSBatch_connectionString": {
-			"value": ""
+		"BrainjammerAzureBatch_properties_typeProperties_poolName": {
+			"value": "brainwaves"
 		},
-		"BrainjammerAzureBatch_accessKey": {
-			"value": ""
+		"BrainjammerAzureBatch_properties_typeProperties_accountName": {
+			"value": "brainjammer"
 		},
 		"BrainjammerAzureSQL_properties_typeProperties_server": {
 			"value": "csharpguitar-azsqldb.database.windows.net"
@@ -37,15 +46,6 @@
 		},
 		"azsynapseanalytics-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://csharpguitarpublic.dfs.core.windows.net"
-		},
-		"BrainjammerAzureBatch_properties_typeProperties_batchUri": {
-			"value": "https://brainjammer.swedencentral.batch.azure.com"
-		},
-		"BrainjammerAzureBatch_properties_typeProperties_poolName": {
-			"value": "brainwaves"
-		},
-		"BrainjammerAzureBatch_properties_typeProperties_accountName": {
-			"value": "brainjammer"
 		}
 	}
 }
