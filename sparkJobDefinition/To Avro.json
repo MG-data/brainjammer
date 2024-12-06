@@ -1,0 +1,38 @@
+{
+	"name": "To Avro",
+	"properties": {
+		"targetBigDataPool": {
+			"referenceName": "SparkPoolBatch",
+			"type": "BigDataPoolReference"
+		},
+		"requiredSparkVersion": "3.4",
+		"language": "python",
+		"scanFolder": false,
+		"jobProperties": {
+			"name": "To Avro",
+			"file": "abfss://brainjammer@csharpguitarpublic.dfs.core.windows.net/BatchJobs/ToAvro/",
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "3c076409-40be-4246-85ab-787a248ffd3c",
+				"spark.synapse.context.sjdname": "To Avro"
+			},
+			"args": [
+				"ClassicalMusic",
+				"EMEA/brainjammer/in/2022/06/15/08/",
+				"brainjammer@csharpguitarpublic"
+			],
+			"jars": [],
+			"pyFiles": [
+				""
+			],
+			"files": [],
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2
+		}
+	}
+}
