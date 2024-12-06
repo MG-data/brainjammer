@@ -1,0 +1,37 @@
+{
+	"name": "TransformSessionFrequencyToMedian",
+	"properties": {
+		"activities": [
+			{
+				"name": "Calculate Frequency Median",
+				"type": "Custom",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"command": "run.bat",
+					"resourceLinkedService": {
+						"referenceName": "ADLSBatch",
+						"type": "LinkedServiceReference"
+					},
+					"folderPath": "brainjammer/BatchJobs/Exercise6.1",
+					"referenceObjects": {
+						"linkedServices": [],
+						"datasets": []
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "BrainjammerAzureBatch",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
