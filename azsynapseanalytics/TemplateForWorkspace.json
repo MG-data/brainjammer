@@ -24,6 +24,18 @@
 			"metadata": "Secure string for 'connectionString' of 'azsynapseanalytics-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:azsynapseanalytics.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
+		"ADLSBatch_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ADLSBatch'"
+		},
+		"BrainjammerAzureBatch_accessKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessKey' of 'BrainjammerAzureBatch'"
+		},
 		"BrainjammerAzureSQL_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "csharpguitar-azsqldb.database.windows.net"
@@ -39,6 +51,18 @@
 		"azsynapseanalytics-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://csharpguitarpublic.dfs.core.windows.net"
+		},
+		"BrainjammerAzureBatch_properties_typeProperties_batchUri": {
+			"type": "string",
+			"defaultValue": "https://brainjammer.swedencentral.batch.azure.com"
+		},
+		"BrainjammerAzureBatch_properties_typeProperties_poolName": {
+			"type": "string",
+			"defaultValue": "brainwaves"
+		},
+		"BrainjammerAzureBatch_properties_typeProperties_accountName": {
+			"type": "string",
+			"defaultValue": "brainjammer"
 		}
 	},
 	"variables": {
@@ -527,7 +551,6 @@
 				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultSqlServer')]",
 				"[concat(variables('workspaceId'), '/dataflows/Ch05Ex13F')]",
 				"[concat(variables('workspaceId'), '/linkedServices/azsynapseanalytics-WorkspaceDefaultStorage')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/notebooks/Ch05Ex13TB')]",
 				"[concat(variables('workspaceId'), '/bigDataPools/SparkPool')]",
 				"[concat(variables('workspaceId'), '/notebooks/Ch05Ex13N')]"
@@ -2103,7 +2126,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "1f202ca3-5c65-4180-8082-ca5450355eb7"
+						"spark.autotune.trackingId": "fc9f1c9e-b543-4e93-b46f-53d2197f2481"
 					}
 				},
 				"metadata": {
@@ -2128,8 +2151,7 @@
 						"sparkVersion": "3.4",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -2656,6 +2678,74 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/managedVirtualNetworks/default')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ADLSBatch')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('ADLSBatch_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BrainjammerAzureBatch')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBatch",
+				"typeProperties": {
+					"batchUri": "[parameters('BrainjammerAzureBatch_properties_typeProperties_batchUri')]",
+					"poolName": "[parameters('BrainjammerAzureBatch_properties_typeProperties_poolName')]",
+					"accountName": "[parameters('BrainjammerAzureBatch_properties_typeProperties_accountName')]",
+					"linkedServiceName": {
+						"referenceName": "ADLSBatch",
+						"type": "LinkedServiceReference"
+					},
+					"accessKey": {
+						"type": "SecureString",
+						"value": "[parameters('BrainjammerAzureBatch_accessKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ADLSBatch')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		}
 	]
